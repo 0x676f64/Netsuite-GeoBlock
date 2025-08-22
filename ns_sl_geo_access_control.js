@@ -87,7 +87,7 @@ function(log, https, redirect, serverWidget, runtime) {
                 if (ip.indexOf(',') > -1) {
                     ip = ip.split(',')[0].trim();
                 }
-                // CHANGE 1: Handle IPv6 addresses wrapped in brackets
+                // Handle IPv6 addresses wrapped in brackets
                 if (ip.startsWith('[') && ip.endsWith(']')) {
                     ip = ip.slice(1, -1);
                 }
@@ -107,7 +107,7 @@ function(log, https, redirect, serverWidget, runtime) {
         // IPv4 validation
         var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
         
-        // CHANGE 2: Comprehensive IPv6 validation (handles all IPv6 formats)
+        // Comprehensive IPv6 validation (handles all IPv6 formats)
         var ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
         
         return (ipv4Regex.test(ip) || ipv6Regex.test(ip)) && 
@@ -116,7 +116,7 @@ function(log, https, redirect, serverWidget, runtime) {
     }
     
     /**
-     * CHANGE 3: Format IP address for URL (IPv6 needs brackets in URLs)
+     * Format IP address for URL (IPv6 needs brackets in URLs)
      */
     function formatIPForURL(ipAddress) {
         // Check if it's IPv6 (contains colons)
@@ -227,4 +227,5 @@ function(log, https, redirect, serverWidget, runtime) {
     return {
         onRequest: onRequest
     };
+
 });
