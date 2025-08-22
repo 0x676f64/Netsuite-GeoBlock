@@ -75,7 +75,9 @@ function(log, https, redirect, serverWidget, runtime) {
             'HTTP_X_FORWARDED',          // Alternative
             'HTTP_X_CLUSTER_CLIENT_IP',  // Cluster
             'HTTP_CLIENT_IP',            // Client IP
-            'REMOTE_ADDR'                // Direct connection
+            'REMOTE_ADDR',               // Direct connection
+            'HTTP_X_FORWARDED_FOR_IPV6', // Add IPv6 specific headers
+            'HTTP_X_REAL_IP_IPV6'
         ];
         
         for (var i = 0; i < ipHeaders.length; i++) {
@@ -84,6 +86,10 @@ function(log, https, redirect, serverWidget, runtime) {
                 // Handle comma-separated IPs (take first one)
                 if (ip.indexOf(',') > -1) {
                     ip = ip.split(',')[0].trim();
+                }
+                // CHANGE 1: Handle IPv6 addresses wrapped in brackets
+                if (ip.startsWith('[') && ip.endsWith(']')) {
+                    ip = ip.slice(1, -1);
                 }
                 if (isValidIP(ip)) {
                     return ip;
@@ -98,8 +104,30 @@ function(log, https, redirect, serverWidget, runtime) {
      * Validate IP address format
      */
     function isValidIP(ip) {
-        var ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        return ipRegex.test(ip) && ip !== '127.0.0.1' && ip !== '0.0.0.0';
+        // IPv4 validation
+        var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        
+        // CHANGE 2: Comprehensive IPv6 validation (handles all IPv6 formats)
+        var ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+        
+        return (ipv4Regex.test(ip) || ipv6Regex.test(ip)) && 
+               ip !== '127.0.0.1' && ip !== '0.0.0.0' && 
+               ip !== '::1' && ip !== '0000:0000:0000:0000:0000:0000:0000:0001';
+    }
+    
+    /**
+     * CHANGE 3: Format IP address for URL (IPv6 needs brackets in URLs)
+     */
+    function formatIPForURL(ipAddress) {
+        // Check if it's IPv6 (contains colons)
+        if (ipAddress.indexOf(':') > -1) {
+            // Only add brackets if not already present
+            if (!ipAddress.startsWith('[')) {
+                return '[' + ipAddress + ']';
+            }
+            return ipAddress;
+        }
+        return ipAddress;
     }
     
     /**
@@ -107,9 +135,12 @@ function(log, https, redirect, serverWidget, runtime) {
      */
     function getLocationFromIP(ipAddress) {
         try {
+            // CHANGE 3 APPLIED: Format IP for URL
+            var formattedIP = formatIPForURL(ipAddress);
+            
             // Using ip-api.com (free tier: 1000 requests/month)
             var response = https.get({
-                url: 'http://ip-api.com/json/' + ipAddress + '?fields=status,country,countryCode,region,city,isp,query'
+                url: 'http://ip-api.com/json/' + formattedIP + '?fields=status,country,countryCode,region,city,isp,query'
             });
             
             if (response.code === 200) {
@@ -135,9 +166,12 @@ function(log, https, redirect, serverWidget, runtime) {
      */
     function getLocationFromIPFallback(ipAddress) {
         try {
+            // CHANGE 3 APPLIED: Format IP for URL
+            var formattedIP = formatIPForURL(ipAddress);
+            
             // Using ipapi.co as fallback (30,000 requests/month free)
             var response = https.get({
-                url: 'https://ipapi.co/' + ipAddress + '/json/'
+                url: 'https://ipapi.co/' + formattedIP + '/json/'
             });
             
             if (response.code === 200) {

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geographic Access Control Logger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logs-container {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            background: white;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .log-entry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .log-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .log-details {
+            padding: 0 20px 20px;
+            color: #666;
+        }
+
+        .log-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .log-row:last-child {
+            border-bottom: none;
+        }
+
+        .log-key {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .log-value {
+            color: #34495e;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Status Colors */
+        .status-success { 
+            background: linear-gradient(135deg, #d5f4e6, #27ae60);
+            color: white;
+        }
+
+        .status-error { 
+            background: linear-gradient(135deg, #fadbd8, #e74c3c);
+            color: white;
+        }
+
+        .status-warning { 
+            background: linear-gradient(135deg, #fdeaa7, #f39c12);
+            color: white;
+        }
+
+        .status-info { 
+            background: linear-gradient(135deg, #d6eaf8, #3498db);
+            color: white;
+        }
+
+        .country-flag {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .ip-address {
+            background: #34495e;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .timestamp {
+            color: #7f8c8d;
+            font-size: 0.85em;
+        }
+
+        .no-logs {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            background: white;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus {
+            border-color: #3498db;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .log-entry {
+            animation: slideIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 Geographic Access Control Logger</h1>
+            <p>Real-time monitoring of NetSuite geographic access restrictions</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="startLogging()">▶️ Start Logging</button>
+            <button class="btn btn-danger" onclick="stopLogging()">⏹️ Stop Logging</button>
+            <button class="btn btn-success" onclick="clearLogs()">🗑️ Clear Logs</button>
+            <button class="btn btn-primary" onclick="simulateTraffic()">🎯 Simulate Traffic</button>
+            
+            <div class="filter-container">
+                <label for="statusFilter">Filter:</label>
+                <select id="statusFilter" class="filter-select" onchange="filterLogs()">
+                    <option value="all">All Events</option>
+                    <option value="success">✅ Allowed</option>
+                    <option value="error">❌ Blocked</option>
+                    <option value="warning">⚠️ Warning</option>
+                    <option value="info">ℹ️ Info</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" style="color: #27ae60;" id="allowedCount">0</div>
+                <div class="stat-label">Allowed Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #e74c3c;" id="blockedCount">0</div>
+                <div class="stat-label">Blocked Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #3498db;" id="totalCount">0</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #f39c12;" id="uniqueIPs">0</div>
+                <div class="stat-label">Unique IPs</div>
+            </div>
+        </div>
+
+        <div class="logs-container">
+            <div id="logsContainer">
+                <div class="no-logs">
+                    📋 No log entries yet. Click "Start Logging" or "Simulate Traffic" to begin monitoring.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+        let isLogging = false;
+        let stats = {
+            allowed: 0,
+            blocked: 0,
+            total: 0,
+            uniqueIPs: new Set()
+        };
+
+        // Country flags mapping
+        const countryFlags = {
+            'US': '🇺🇸',
+            'CA': '🇨🇦',
+            'GB': '🇬🇧',
+            'DE': '🇩🇪',
+            'FR': '🇫🇷',
+            'JP': '🇯🇵',
+            'CN': '🇨🇳',
+            'RU': '🇷🇺',
+            'IN': '🇮🇳',
+            'BR': '🇧🇷',
+            'MX': '🇲🇽',
+            'AU': '🇦🇺',
+            'IT': '🇮🇹',
+            'ES': '🇪🇸',
+            'KR': '🇰🇷'
+        };
+
+        function startLogging() {
+            isLogging = true;
+            logEvent('info', 'System', 'Logging started', {
+                timestamp: new Date().toISOString(),
+                status: 'Active'
+            });
+        }
+
+        function stopLogging() {
+            isLogging = false;
+            logEvent('info', 'System', 'Logging stopped', {
+                timestamp: new Date().toISOString(),
+                status: 'Inactive'
+            });
+        }
+
+        function clearLogs() {
+            logs = [];
+            stats = {
+                allowed: 0,
+                blocked: 0,
+                total: 0,
+                uniqueIPs: new Set()
+            };
+            updateStats();
+            renderLogs();
+        }
+
+        function logEvent(level, source, message, details = {}) {
+            const timestamp = new Date();
+            const logEntry = {
+                id: Date.now() + Math.random(),
+                timestamp,
+                level,
+                source,
+                message,
+                details,
+                displayed: true
+            };
+
+            logs.unshift(logEntry);
+            
+            // Update stats
+            if (level === 'success') stats.allowed++;
+            if (level === 'error') stats.blocked++;
+            if (details.ip) stats.uniqueIPs.add(details.ip);
+            stats.total++;
+
+            updateStats();
+            renderLogs();
+        }
+
+        function updateStats() {
+            document.getElementById('allowedCount').textContent = stats.allowed;
+            document.getElementById('blockedCount').textContent = stats.blocked;
+            document.getElementById('totalCount').textContent = stats.total;
+            document.getElementById('uniqueIPs').textContent = stats.uniqueIPs.size;
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('logsContainer');
+            const visibleLogs = logs.filter(log => log.displayed);
+            
+            if (visibleLogs.length === 0) {
+                container.innerHTML = '<div class="no-logs">📋 No log entries match current filter.</div>';
+                return;
+            }
+
+            container.innerHTML = visibleLogs.map(log => `
+                <div class="log-entry">
+                    <div class="log-header status-${log.level}">
+                        <div>
+                            <span class="country-flag">${getCountryFlag(log.details.country)}</span>
+                            <strong>${log.source}</strong> - ${log.message}
+                        </div>
+                        <div class="timestamp">${formatTimestamp(log.timestamp)}</div>
+                    </div>
+                    <div class="log-details">
+                        ${Object.entries(log.details).map(([key, value]) => `
+                            <div class="log-row">
+                                <span class="log-key">${formatKey(key)}:</span>
+                                <span class="log-value ${key === 'ip' ? 'ip-address' : ''}">${formatValue(key, value)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getCountryFlag(country) {
+            if (!country) return '🌍';
+            const code = country.length === 2 ? country.toUpperCase() : 
+                         country === 'United States' ? 'US' :
+                         country === 'Canada' ? 'CA' :
+                         country === 'United Kingdom' ? 'GB' :
+                         country === 'Germany' ? 'DE' :
+                         country === 'France' ? 'FR' : '🌍';
+            return countryFlags[code] || '🌍';
+        }
+
+        function formatKey(key) {
+            return key.replace(/([A-Z])/g, ' $1')
+                     .replace(/^./, str => str.toUpperCase())
+                     .replace(/ip/gi, 'IP');
+        }
+
+        function formatValue(key, value) {
+            if (key === 'timestamp') {
+                return new Date(value).toLocaleString();
+            }
+            if (key === 'status' && value === 'success') {
+                return '✅ Allowed';
+            }
+            if (key === 'status' && value === 'blocked') {
+                return '❌ Blocked';
+            }
+            return value;
+        }
+
+        function formatTimestamp(timestamp) {
+            return timestamp.toLocaleTimeString();
+        }
+
+        function filterLogs() {
+            const filter = document.getElementById('statusFilter').value;
+            
+            logs.forEach(log => {
+                if (filter === 'all') {
+                    log.displayed = true;
+                } else {
+                    log.displayed = log.level === filter;
+                }
+            });
+            
+            renderLogs();
+        }
+
+        function simulateTraffic() {
+            const scenarios = [
+                // US Access (Allowed)
+                {
+                    level: 'success',
+                    source: 'Suitelet',
+                    message: 'Access granted to US user',
+                    details: {
+                        ip: '192.168.1.' + Math.floor(Math.random() * 255),
+                        country: 'United States',
+                        countryCode: 'US',
+                        region: 'California',
+                        city: 'San Francisco',
+                        isp: 'Comcast Cable',
+                        status: 'success',
+                        action: 'Registration allowed'
+                    }
+                },
+                // Non-US Access (Blocked)
+                {
+                    level: 'error',
+                    source: 'Suitelet',
+                    message: 'Access denied to non-US user',
+                    details: {
+                        ip: '85.214.132.' + Math.floor(Math.random() * 255),
+                        country: 'Germany',
+                        countryCode: 'DE',
+                        region: 'Bavaria',
+                        city: 'Munich',
+                        isp: 'Deutsche Telekom',
+                        status: 'blocked',
+                        reason: 'Geographic restriction'
+                    }
+                },
+                // IP Detection Warning
+                {
+                    level: 'warning',
+                    source: 'IP Detection',
+                    message: 'Multiple proxy headers detected',
+                    details: {
+                        ip: '203.0.113.' + Math.floor(Math.random() * 255),
+                        headers: 'X-Forwarded-For, X-Real-IP',
+                        country: 'Canada',
+                        countryCode: 'CA',
+                        possibleProxy: 'Yes',
+                        action: 'Additional validation required'
+                    }
+                },
+                // Geolocation API Failure
+                {
+                    level: 'error',
+                    source: 'Geolocation',
+                    message: 'Primary geolocation service failed',
+                    details: {
+                        ip: '198.51.100.' + Math.floor(Math.random() * 255),
+                        primaryService: 'ip-api.com',
+                        fallbackService: 'ipapi.co',
+                        status: 'Fallback used',
+                        responseTime: Math.floor(Math.random() * 5000) + 'ms'
+                    }
+                },
+                // Suspicious Email Pattern
+                {
+                    level: 'warning',
+                    source: 'User Event',
+                    message: 'Suspicious email pattern detected',
+                    details: {
+                        email: 'user' + Math.floor(Math.random() * 10000) + '@tempmail.com',
+                        pattern: 'Temporary email service',
+                        country: 'United States',
+                        action: 'Manual review required'
+                    }
+                }
+            ];
+
+            const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            logEvent(scenario.level, scenario.source, scenario.message, scenario.details);
+
+            // Simulate multiple events
+            setTimeout(() => {
+                if (Math.random() > 0.5) {
+                    const scenario2 = scenarios[Math.floor(Math.random() * scenarios.length)];
+                    logEvent(scenario2.level, scenario2.source, scenario2.message, scenario2.details);
+                }
+            }, 1000);
+        }
+
+        // Initialize
+        updateStats();
+        renderLogs();
+
+        // Simulate some initial data
+        setTimeout(() => {
+            logEvent('info', 'System', 'Geographic Access Control Logger initialized', {
+                version: '1.0.0',
+                timestamp: new Date().toISOString(),
+                features: 'IP Detection, Geolocation, Access Control'
+            });
+        }, 500);
+    </script>
+</body>
+</html>
