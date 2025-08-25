@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geographic Access Control Logger</title>
+    <title>NetSuite Security Monitoring Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -12,131 +12,296 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #e2e8f0;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            padding: 20px;
         }
 
         .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            padding: 25px;
+            background: rgba(15, 15, 35, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
             text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .header h1 {
-            font-size: 2.2em;
-            margin-bottom: 10px;
+            font-size: 2.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #64ffda, #00bcd4, #2196f3);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
         }
 
         .header p {
+            color: #94a3b8;
+            font-size: 1.2em;
             opacity: 0.9;
-            font-size: 1.1em;
         }
 
         .controls {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+            background: rgba(15, 15, 35, 0.6);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
             padding: 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 30px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .filter-container {
             display: flex;
             gap: 15px;
             align-items: center;
             flex-wrap: wrap;
         }
 
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
+        .filter-select, .search-input {
+            padding: 12px 18px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #e2e8f0;
+            outline: none;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #27ae60, #229954);
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        .filter-select:focus, .search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            padding: 20px;
-            background: #f8f9fa;
+            margin-bottom: 30px;
         }
 
         .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            background: rgba(15, 15, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            padding: 25px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #64ffda, #00bcd4, #2196f3);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(100, 255, 218, 0.3);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 2.8em;
+            font-weight: 800;
+            line-height: 1;
         }
 
         .stat-label {
-            color: #666;
+            color: #94a3b8;
             font-size: 0.9em;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            opacity: 0.7;
+        }
+
+        .threat-level {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+
+        .threat-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .threat-low { background: #10b981; }
+        .threat-medium { background: #f59e0b; }
+        .threat-high { background: #ef4444; }
+        .threat-critical { background: #dc2626; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .logs-section {
+            background: rgba(15, 15, 35, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 20px 25px;
+            background: rgba(30, 41, 59, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #64ffda;
         }
 
         .logs-container {
-            padding: 20px;
-            max-height: 600px;
+            max-height: 700px;
             overflow-y: auto;
+            padding: 20px;
+        }
+
+        .logs-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .logs-container::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 3px;
+        }
+
+        .logs-container::-webkit-scrollbar-thumb {
+            background: rgba(100, 255, 218, 0.5);
+            border-radius: 3px;
         }
 
         .log-entry {
-            background: white;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
             margin-bottom: 15px;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            animation: slideIn 0.5s ease-out;
         }
 
         .log-entry:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(100, 255, 218, 0.2);
         }
 
         .log-header {
@@ -145,53 +310,117 @@
             justify-content: space-between;
             align-items: center;
             font-weight: 600;
+            border-left: 4px solid;
         }
 
         .log-details {
             padding: 0 20px 20px;
-            color: #666;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
         }
 
         .log-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .log-row:last-child {
-            border-bottom: none;
+            padding: 8px 12px;
+            background: rgba(15, 15, 35, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .log-key {
             font-weight: 600;
-            color: #2c3e50;
+            color: #94a3b8;
+            font-size: 0.85em;
         }
 
         .log-value {
-            color: #34495e;
-            font-family: 'Courier New', monospace;
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .alert-panel {
+            background: rgba(15, 15, 35, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .alert-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .alert-item:hover {
+            background: rgba(30, 41, 59, 0.3);
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            font-size: 1.5em;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 4px;
+        }
+
+        .alert-time {
+            color: #64748b;
+            font-size: 0.8em;
         }
 
         /* Status Colors */
         .status-success { 
-            background: linear-gradient(135deg, #d5f4e6, #27ae60);
-            color: white;
+            border-left-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
         }
 
         .status-error { 
-            background: linear-gradient(135deg, #fadbd8, #e74c3c);
-            color: white;
+            border-left-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
         }
 
         .status-warning { 
-            background: linear-gradient(135deg, #fdeaa7, #f39c12);
-            color: white;
+            border-left-color: #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
         }
 
         .status-info { 
-            background: linear-gradient(135deg, #d6eaf8, #3498db);
-            color: white;
+            border-left-color: #3b82f6;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+        }
+
+        .status-critical {
+            border-left-color: #dc2626;
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(220, 38, 38, 0.05));
+            animation: criticalAlert 2s infinite;
+        }
+
+        @keyframes criticalAlert {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
         }
 
         .country-flag {
@@ -200,43 +429,39 @@
         }
 
         .ip-address {
-            background: #34495e;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
+            background: rgba(30, 41, 59, 0.8);
+            color: #64ffda;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            border: 1px solid rgba(100, 255, 218, 0.2);
         }
 
+        .risk-score {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
+
+        .risk-low { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .risk-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .risk-high { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .risk-critical { background: rgba(220, 38, 38, 0.2); color: #dc2626; }
+
         .timestamp {
-            color: #7f8c8d;
+            color: #64748b;
             font-size: 0.85em;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .no-logs {
             text-align: center;
-            padding: 40px;
-            color: #7f8c8d;
+            padding: 60px 20px;
+            color: #64748b;
             font-style: italic;
-        }
-
-        .filter-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .filter-select {
-            padding: 8px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 20px;
-            background: white;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        .filter-select:focus {
-            border-color: #3498db;
         }
 
         @keyframes slideIn {
@@ -250,31 +475,66 @@
             }
         }
 
-        .log-entry {
-            animation: slideIn 0.5s ease-out;
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                justify-content: center;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .advanced-search {
+            background: rgba(15, 15, 35, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌍 Geographic Access Control Logger</h1>
-            <p>Real-time monitoring of NetSuite geographic access restrictions</p>
+            <h1>🛡️ NetSuite Security Monitoring Dashboard</h1>
+            <p>Real-time threat detection and geographic access control for e-commerce security</p>
         </div>
 
         <div class="controls">
-            <button class="btn btn-primary" onclick="startLogging()">▶️ Start Logging</button>
-            <button class="btn btn-danger" onclick="stopLogging()">⏹️ Stop Logging</button>
-            <button class="btn btn-success" onclick="clearLogs()">🗑️ Clear Logs</button>
-            <button class="btn btn-primary" onclick="simulateTraffic()">🎯 Simulate Traffic</button>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="startLogging()">▶️ Start Monitor</button>
+                <button class="btn btn-danger" onclick="stopLogging()">⏹️ Stop Monitor</button>
+                <button class="btn btn-success" onclick="clearLogs()">🗑️ Clear Logs</button>
+                <button class="btn btn-warning" onclick="simulateTraffic()">⚡ Simulate Threats</button>
+            </div>
             
             <div class="filter-container">
-                <label for="statusFilter">Filter:</label>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search logs..." onkeyup="searchLogs()">
                 <select id="statusFilter" class="filter-select" onchange="filterLogs()">
                     <option value="all">All Events</option>
                     <option value="success">✅ Allowed</option>
                     <option value="error">❌ Blocked</option>
-                    <option value="warning">⚠️ Warning</option>
+                    <option value="warning">⚠️ Suspicious</option>
+                    <option value="critical">🚨 Critical</option>
                     <option value="info">ℹ️ Info</option>
                 </select>
             </div>
@@ -282,27 +542,88 @@
 
         <div class="stats">
             <div class="stat-card">
-                <div class="stat-number" style="color: #27ae60;" id="allowedCount">0</div>
-                <div class="stat-label">Allowed Requests</div>
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number" style="color: #10b981;" id="allowedCount">0</div>
+                        <div class="stat-label">Allowed Requests</div>
+                        <div class="threat-level">
+                            <div class="threat-indicator threat-low"></div>
+                            <span>Low Risk</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon">✅</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" style="color: #e74c3c;" id="blockedCount">0</div>
-                <div class="stat-label">Blocked Requests</div>
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number" style="color: #ef4444;" id="blockedCount">0</div>
+                        <div class="stat-label">Blocked Attempts</div>
+                        <div class="threat-level">
+                            <div class="threat-indicator threat-high"></div>
+                            <span>High Risk</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon">🚫</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" style="color: #3498db;" id="totalCount">0</div>
-                <div class="stat-label">Total Requests</div>
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number" style="color: #f59e0b;" id="suspiciousCount">0</div>
+                        <div class="stat-label">CC Brute Force</div>
+                        <div class="threat-level">
+                            <div class="threat-indicator threat-critical"></div>
+                            <span>Critical</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon">💳</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" style="color: #f39c12;" id="uniqueIPs">0</div>
-                <div class="stat-label">Unique IPs</div>
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number" style="color: #3b82f6;" id="uniqueIPs">0</div>
+                        <div class="stat-label">Unique IPs</div>
+                        <div class="threat-level">
+                            <div class="threat-indicator threat-medium"></div>
+                            <span>Medium Risk</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon">🌐</div>
+                </div>
             </div>
         </div>
 
-        <div class="logs-container">
-            <div id="logsContainer">
-                <div class="no-logs">
-                    📋 No log entries yet. Click "Start Logging" or "Simulate Traffic" to begin monitoring.
+        <div class="main-content">
+            <div class="logs-section">
+                <div class="section-header">
+                    <div class="section-title">🔍 Security Event Logs</div>
+                    <div class="timestamp" id="lastUpdate">Last Update: Never</div>
+                </div>
+                <div class="logs-container">
+                    <div id="logsContainer">
+                        <div class="no-logs">
+                            🛡️ Security monitoring inactive. Click "Start Monitor" to begin threat detection.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="alert-panel">
+                    <div class="section-header">
+                        <div class="section-title">🚨 Active Threats</div>
+                    </div>
+                    <div id="alertsContainer">
+                        <div class="alert-item">
+                            <div class="alert-icon">🛡️</div>
+                            <div class="alert-content">
+                                <div class="alert-title">System Ready</div>
+                                <div class="alert-time">Monitoring inactive</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -310,70 +631,95 @@
 
     <script>
         let logs = [];
+        let alerts = [];
         let isLogging = false;
         let stats = {
             allowed: 0,
             blocked: 0,
+            suspicious: 0,
             total: 0,
             uniqueIPs: new Set()
         };
 
         // Country flags mapping
         const countryFlags = {
-            'US': '🇺🇸',
-            'CA': '🇨🇦',
-            'GB': '🇬🇧',
-            'DE': '🇩🇪',
-            'FR': '🇫🇷',
-            'JP': '🇯🇵',
-            'CN': '🇨🇳',
-            'RU': '🇷🇺',
-            'IN': '🇮🇳',
-            'BR': '🇧🇷',
-            'MX': '🇲🇽',
-            'AU': '🇦🇺',
-            'IT': '🇮🇹',
-            'ES': '🇪🇸',
-            'KR': '🇰🇷'
+            'US': '🇺🇸', 'CA': '🇨🇦', 'GB': '🇬🇧', 'DE': '🇩🇪', 'FR': '🇫🇷',
+            'JP': '🇯🇵', 'CN': '🇨🇳', 'RU': '🇷🇺', 'IN': '🇮🇳', 'BR': '🇧🇷',
+            'MX': '🇲🇽', 'AU': '🇦🇺', 'IT': '🇮🇹', 'ES': '🇪🇸', 'KR': '🇰🇷',
+            'NL': '🇳🇱', 'SE': '🇸🇪', 'NO': '🇳🇴', 'TR': '🇹🇷', 'UA': '🇺🇦'
         };
+
+        // Risk assessment function
+        function calculateRiskScore(details) {
+            let score = 0;
+            
+            if (details.action && details.action.includes('brute force')) score += 80;
+            if (details.failedAttempts && details.failedAttempts > 5) score += 60;
+            if (details.country && details.country !== 'United States') score += 20;
+            if (details.possibleProxy === 'Yes') score += 40;
+            if (details.email && details.email.includes('tempmail')) score += 30;
+            if (details.sessionLength && parseInt(details.sessionLength) > 3600) score += 25;
+            
+            if (score >= 80) return 'critical';
+            if (score >= 60) return 'high';
+            if (score >= 30) return 'medium';
+            return 'low';
+        }
 
         function startLogging() {
             isLogging = true;
-            logEvent('info', 'System', 'Logging started', {
+            logEvent('info', 'System', 'Security monitoring activated', {
                 timestamp: new Date().toISOString(),
-                status: 'Active'
+                status: 'Active',
+                features: 'CC Brute Force Detection, Geo-blocking, IP Analysis'
             });
+            
+            addAlert('success', 'Security Monitor Active', 'Real-time threat detection enabled');
+            updateLastUpdate();
         }
 
         function stopLogging() {
             isLogging = false;
-            logEvent('info', 'System', 'Logging stopped', {
+            logEvent('warning', 'System', 'Security monitoring deactivated', {
                 timestamp: new Date().toISOString(),
-                status: 'Inactive'
+                status: 'Inactive',
+                reason: 'Manual stop'
             });
+            
+            addAlert('warning', 'Monitor Stopped', 'Security monitoring has been disabled');
         }
 
         function clearLogs() {
             logs = [];
+            alerts = [];
             stats = {
                 allowed: 0,
                 blocked: 0,
+                suspicious: 0,
                 total: 0,
                 uniqueIPs: new Set()
             };
             updateStats();
             renderLogs();
+            renderAlerts();
+            
+            addAlert('info', 'Logs Cleared', 'All security logs have been removed');
         }
 
         function logEvent(level, source, message, details = {}) {
             const timestamp = new Date();
+            const riskScore = calculateRiskScore(details);
+            
             const logEntry = {
                 id: Date.now() + Math.random(),
                 timestamp,
-                level,
+                level: level === 'critical' ? 'critical' : level,
                 source,
                 message,
-                details,
+                details: {
+                    ...details,
+                    riskScore: riskScore
+                },
                 displayed: true
             };
 
@@ -382,18 +728,44 @@
             // Update stats
             if (level === 'success') stats.allowed++;
             if (level === 'error') stats.blocked++;
+            if (details.action && details.action.includes('brute force')) stats.suspicious++;
             if (details.ip) stats.uniqueIPs.add(details.ip);
             stats.total++;
 
+            // Create alert for high-risk events
+            if (riskScore === 'critical' || riskScore === 'high') {
+                addAlert('critical', `${source}: ${message}`, `Risk Level: ${riskScore.toUpperCase()}`);
+            }
+
             updateStats();
             renderLogs();
+            updateLastUpdate();
+        }
+
+        function addAlert(type, title, description) {
+            const alert = {
+                id: Date.now() + Math.random(),
+                type,
+                title,
+                description,
+                timestamp: new Date()
+            };
+            
+            alerts.unshift(alert);
+            if (alerts.length > 10) alerts.pop(); // Keep only last 10 alerts
+            
+            renderAlerts();
         }
 
         function updateStats() {
             document.getElementById('allowedCount').textContent = stats.allowed;
             document.getElementById('blockedCount').textContent = stats.blocked;
-            document.getElementById('totalCount').textContent = stats.total;
+            document.getElementById('suspiciousCount').textContent = stats.suspicious;
             document.getElementById('uniqueIPs').textContent = stats.uniqueIPs.size;
+        }
+
+        function updateLastUpdate() {
+            document.getElementById('lastUpdate').textContent = `Last Update: ${new Date().toLocaleTimeString()}`;
         }
 
         function renderLogs() {
@@ -401,7 +773,7 @@
             const visibleLogs = logs.filter(log => log.displayed);
             
             if (visibleLogs.length === 0) {
-                container.innerHTML = '<div class="no-logs">📋 No log entries match current filter.</div>';
+                container.innerHTML = '<div class="no-logs">🔍 No security events match current filter.</div>';
                 return;
             }
 
@@ -411,11 +783,12 @@
                         <div>
                             <span class="country-flag">${getCountryFlag(log.details.country)}</span>
                             <strong>${log.source}</strong> - ${log.message}
+                            ${log.details.riskScore ? `<span class="risk-score risk-${log.details.riskScore}">${log.details.riskScore}</span>` : ''}
                         </div>
                         <div class="timestamp">${formatTimestamp(log.timestamp)}</div>
                     </div>
                     <div class="log-details">
-                        ${Object.entries(log.details).map(([key, value]) => `
+                        ${Object.entries(log.details).filter(([key]) => key !== 'riskScore').map(([key, value]) => `
                             <div class="log-row">
                                 <span class="log-key">${formatKey(key)}:</span>
                                 <span class="log-value ${key === 'ip' ? 'ip-address' : ''}">${formatValue(key, value)}</span>
@@ -426,6 +799,44 @@
             `).join('');
         }
 
+        function renderAlerts() {
+            const container = document.getElementById('alertsContainer');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="alert-item">
+                        <div class="alert-icon">🛡️</div>
+                        <div class="alert-content">
+                            <div class="alert-title">No Active Threats</div>
+                            <div class="alert-time">System secure</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert-item">
+                    <div class="alert-icon">${getAlertIcon(alert.type)}</div>
+                    <div class="alert-content">
+                        <div class="alert-title">${alert.title}</div>
+                        <div class="alert-time">${alert.description} - ${alert.timestamp.toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getAlertIcon(type) {
+            const icons = {
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌',
+                'critical': '🚨',
+                'info': 'ℹ️'
+            };
+            return icons[type] || 'ℹ️';
+        }
+
         function getCountryFlag(country) {
             if (!country) return '🌍';
             const code = country.length === 2 ? country.toUpperCase() : 
@@ -433,14 +844,17 @@
                          country === 'Canada' ? 'CA' :
                          country === 'United Kingdom' ? 'GB' :
                          country === 'Germany' ? 'DE' :
-                         country === 'France' ? 'FR' : '🌍';
+                         country === 'France' ? 'FR' :
+                         country === 'Netherlands' ? 'NL' : '🌍';
             return countryFlags[code] || '🌍';
         }
 
         function formatKey(key) {
             return key.replace(/([A-Z])/g, ' $1')
                      .replace(/^./, str => str.toUpperCase())
-                     .replace(/ip/gi, 'IP');
+                     .replace(/ip/gi, 'IP')
+                     .replace(/cc/gi, 'CC')
+                     .replace(/cvv/gi, 'CVV');
         }
 
         function formatValue(key, value) {
@@ -453,6 +867,9 @@
             if (key === 'status' && value === 'blocked') {
                 return '❌ Blocked';
             }
+            if (key === 'riskScore') {
+                return value.toUpperCase();
+            }
             return value;
         }
 
@@ -462,115 +879,177 @@
 
         function filterLogs() {
             const filter = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             
             logs.forEach(log => {
-                if (filter === 'all') {
-                    log.displayed = true;
-                } else {
-                    log.displayed = log.level === filter;
-                }
+                let matchesFilter = filter === 'all' || log.level === filter;
+                let matchesSearch = searchTerm === '' || 
+                    log.message.toLowerCase().includes(searchTerm) ||
+                    log.source.toLowerCase().includes(searchTerm) ||
+                    JSON.stringify(log.details).toLowerCase().includes(searchTerm);
+                
+                log.displayed = matchesFilter && matchesSearch;
             });
             
             renderLogs();
         }
 
+        function searchLogs() {
+            filterLogs();
+        }
+
         function simulateTraffic() {
             const scenarios = [
-                // US Access (Allowed)
+                // Credit Card Brute Force Attack
+                {
+                    level: 'critical',
+                    source: 'Payment Gateway',
+                    message: 'Credit card brute force attack detected',
+                    details: {
+                        ip: '95.211.198.' + Math.floor(Math.random() * 255),
+                        country: 'Netherlands',
+                        countryCode: 'NL',
+                        userAgent: 'curl/7.68.0',
+                        failedAttempts: Math.floor(Math.random() * 20) + 10,
+                        ccAttempts: Math.floor(Math.random() * 50) + 25,
+                        action: 'CC brute force detected',
+                        sessionLength: '45s',
+                        paymentMethod: 'Multiple cards tested',
+                        blockedReason: 'Excessive failed attempts'
+                    }
+                },
+                // Suspicious Geographic Access
+                {
+                    level: 'error',
+                    source: 'Geographic Filter',
+                    message: 'Access denied from high-risk country',
+                    details: {
+                        ip: '185.220.101.' + Math.floor(Math.random() * 255),
+                        country: 'Russia',
+                        countryCode: 'RU',
+                        region: 'Moscow',
+                        city: 'Moscow',
+                        isp: 'Tor Exit Node',
+                        possibleProxy: 'Yes',
+                        proxyType: 'Tor Network',
+                        action: 'Geo-blocked',
+                        riskFactors: 'Tor usage, High-risk country'
+                    }
+                },
+                // Legitimate US Transaction
                 {
                     level: 'success',
-                    source: 'Suitelet',
-                    message: 'Access granted to US user',
+                    source: 'Payment Processor',
+                    message: 'Transaction approved for US customer',
                     details: {
-                        ip: '192.168.1.' + Math.floor(Math.random() * 255),
+                        ip: '73.241.92.' + Math.floor(Math.random() * 255),
                         country: 'United States',
                         countryCode: 'US',
                         region: 'California',
-                        city: 'San Francisco',
-                        isp: 'Comcast Cable',
-                        status: 'success',
-                        action: 'Registration allowed'
+                        city: 'Los Angeles',
+                        isp: 'Spectrum',
+                        transactionId: 'TXN-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                        amount: '$' + (Math.random() * 500 + 50).toFixed(2),
+                        paymentMethod: 'Visa ***4532',
+                        action: 'Transaction approved'
                     }
                 },
-                // Non-US Access (Blocked)
-                {
-                    level: 'error',
-                    source: 'Suitelet',
-                    message: 'Access denied to non-US user',
-                    details: {
-                        ip: '85.214.132.' + Math.floor(Math.random() * 255),
-                        country: 'Germany',
-                        countryCode: 'DE',
-                        region: 'Bavaria',
-                        city: 'Munich',
-                        isp: 'Deutsche Telekom',
-                        status: 'blocked',
-                        reason: 'Geographic restriction'
-                    }
-                },
-                // IP Detection Warning
+                // Velocity Attack Detection
                 {
                     level: 'warning',
-                    source: 'IP Detection',
-                    message: 'Multiple proxy headers detected',
+                    source: 'Velocity Monitor',
+                    message: 'Unusual transaction velocity detected',
                     details: {
-                        ip: '203.0.113.' + Math.floor(Math.random() * 255),
-                        headers: 'X-Forwarded-For, X-Real-IP',
+                        ip: '156.146.34.' + Math.floor(Math.random() * 255),
                         country: 'Canada',
                         countryCode: 'CA',
-                        possibleProxy: 'Yes',
-                        action: 'Additional validation required'
+                        transactionCount: Math.floor(Math.random() * 15) + 8,
+                        timeWindow: '2 minutes',
+                        averageAmount: '$' + (Math.random() * 100 + 20).toFixed(2),
+                        action: 'Rate limiting applied',
+                        status: 'Under review'
                     }
                 },
-                // Geolocation API Failure
-                {
-                    level: 'error',
-                    source: 'Geolocation',
-                    message: 'Primary geolocation service failed',
-                    details: {
-                        ip: '198.51.100.' + Math.floor(Math.random() * 255),
-                        primaryService: 'ip-api.com',
-                        fallbackService: 'ipapi.co',
-                        status: 'Fallback used',
-                        responseTime: Math.floor(Math.random() * 5000) + 'ms'
-                    }
-                },
-                // Suspicious Email Pattern
+                // Compromised Email Pattern
                 {
                     level: 'warning',
-                    source: 'User Event',
-                    message: 'Suspicious email pattern detected',
+                    source: 'User Validation',
+                    message: 'Compromised email pattern detected',
                     details: {
-                        email: 'user' + Math.floor(Math.random() * 10000) + '@tempmail.com',
-                        pattern: 'Temporary email service',
+                        email: 'user' + Math.floor(Math.random() * 10000) + '@' + ['tempmail.org', '10minutemail.com', 'guerrillamail.com'][Math.floor(Math.random() * 3)],
+                        ip: '178.62.205.' + Math.floor(Math.random() * 255),
+                        country: 'Germany',
+                        emailAge: Math.floor(Math.random() * 30) + ' minutes',
+                        previousAttempts: Math.floor(Math.random() * 5) + 1,
+                        action: 'Email verification required'
+                    }
+                },
+                // Successful Multi-Factor Authentication
+                {
+                    level: 'info',
+                    source: 'MFA System',
+                    message: 'Multi-factor authentication successful',
+                    details: {
+                        ip: '24.158.194.' + Math.floor(Math.random() * 255),
                         country: 'United States',
-                        action: 'Manual review required'
+                        countryCode: 'US',
+                        region: 'Texas',
+                        mfaMethod: 'SMS Code',
+                        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0)',
+                        deviceTrust: 'Trusted device',
+                        action: 'Authentication completed'
+                    }
+                },
+                // SQL Injection Attempt
+                {
+                    level: 'critical',
+                    source: 'WAF',
+                    message: 'SQL injection attempt blocked',
+                    details: {
+                        ip: '122.165.78.' + Math.floor(Math.random() * 255),
+                        country: 'China',
+                        countryCode: 'CN',
+                        attackVector: 'Login form',
+                        payload: "' OR 1=1--",
+                        blockedBy: 'Web Application Firewall',
+                        action: 'IP temporarily banned',
+                        banDuration: '24 hours'
                     }
                 }
             ];
 
-            const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-            logEvent(scenario.level, scenario.source, scenario.message, scenario.details);
+            // Simulate 1-3 events
+            const numEvents = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < numEvents; i++) {
+                setTimeout(() => {
+                    const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+                    logEvent(scenario.level, scenario.source, scenario.message, scenario.details);
+                }, i * 1000);
+            }
+        }
 
-            // Simulate multiple events
-            setTimeout(() => {
-                if (Math.random() > 0.5) {
-                    const scenario2 = scenarios[Math.floor(Math.random() * scenarios.length)];
-                    logEvent(scenario2.level, scenario2.source, scenario2.message, scenario2.details);
-                }
-            }, 1000);
+        // Auto-simulate traffic when logging is active
+        function autoSimulate() {
+            if (isLogging && Math.random() > 0.7) {
+                simulateTraffic();
+            }
         }
 
         // Initialize
         updateStats();
         renderLogs();
+        renderAlerts();
 
-        // Simulate some initial data
+        // Auto-simulation interval
+        setInterval(autoSimulate, 10000); // Every 10 seconds
+
+        // Initialize with system startup message
         setTimeout(() => {
-            logEvent('info', 'System', 'Geographic Access Control Logger initialized', {
-                version: '1.0.0',
+            logEvent('info', 'System', 'Security Dashboard initialized', {
+                version: '2.0.0',
                 timestamp: new Date().toISOString(),
-                features: 'IP Detection, Geolocation, Access Control'
+                features: 'Advanced CC Protection, Geo-filtering, Risk Assessment',
+                modules: 'WAF, Velocity Monitor, MFA Integration'
             });
         }, 500);
     </script>
